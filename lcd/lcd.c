@@ -1,16 +1,32 @@
 /* @file fm-160lcd.c
  *
- * @brief
+ * @brief Este es un driver intermedio entre lcd_module.c y pcf8553. Entre las
+ * responsabilidades de este modulo estan:
+ * Dar accesos a la escritura de cada caracter y simbolo en el LCD custom:
+ * Linea 1 de 8 caracteres
+ * Linea 2 de 7 caracteres
+ * Simbolos RATE, BACH, TTL, ACM, H, M, S, D....
+ *
  *
  *
  */
 
 // Includes.
 #include "lcd.h"
-
 #include "pcf8553.h"
 #include "ctype.h"
 
+// Typedef.
+
+/*
+ * Ver hoja de datos del lcd, cada segmento se identifica con una letra, se
+ * codifica a numero. Cada segmento esta conectado a un pin del pcf8553, luego
+ * cada pin esta relacionado con bit de un resgitro de 8 bits en el mapa de
+ * memoria del pcf8553. Se debe construir una matiz que relacione los segmentos
+ * con el bit que se quiere encender, esto se hara para un solo digito, luego
+ * por se obtendran las posiciones de los siguientes digitos.
+ *
+ */
 #define SEG_A 0
 #define SEG_B 1
 #define SEG_C 2
@@ -20,19 +36,41 @@
 #define SEG_G 6
 #define SEG_H 7
 
-// Variables globables declaradas en otros modulos, tipo extern.
-
 /*
+ * Cantidad de filas y columnas de la pantalla, notar que se tiene dos filas
+ * donde:
+ * La fila 0 tiene 8 caracteres, equivalente a 8 columas
+ * La fila 1 tiene 7 caracteres, equiavlente a 7 columas
+ *
+ * Aun asi estas macros son para definir un buffer de 2x8, luego los timites
+ * para cada fila del buffer seran 8 y 7 elementos para las filas 0 y 1
+ * respectivamente.
  *
  */
-extern uint8_t g_lcd_map[20];
+#define LCD_ROWS 2
+#define LCD_COLS 8
 
-// Variables gloables visibles solo en este modulo
+#define LCD_ROW_0_SIZE 8
+#define LCD_ROW_1_SIZE 7
+
+// Project variables, non-static, at least usedd in other file.
+
+
+// Extern variables.
+
+extern uint8_t g_lcd_map[PCF8553_DATA_SIZE];
+
+// Global variables, statics.
 
 /*
- * Buscar los comentariosn en los modulos donde fueron declaradas.
+ * Lo que se quiera escribir en las lineas 1 y 2 primero se vuelca a este
+ * buffer. Leer el buffer es la unica manera practica que se tiene para
+ * saber que esta escrito en la pantalla, no de debe corromper esta ,condicion.
+ *
+ * Notar que la primera linea tiene
+ *
  */
-static uint8_t g_buf[2][8];
+static uint8_t g_buf[LCD_COLS][LCD_ROWS];
 static uint8_t g_cursor;
 static uint8_t g_line;
 
@@ -46,10 +84,9 @@ static uint8_t g_line;
  *  Cada par de valores pos y reg se corresponden a la direccion de un registro
  *  y el bit correspondiente que controlan los segmentos de A a G.
  *  Solo se necesitan los datos de este caracter, las posiciones de los demas
- *  se obtienen por aritmetica dentro de la funcion lcd_write_line
- *
+ *  se obtienen por aritmetica dentro de la funcion lcd_write_line.
  */
-oct_t oct_u[8] =
+oct_t oct_u[LCD_ROW_0_SIZE] =
 {
 	{
 		.pos = 6,
@@ -85,7 +122,7 @@ oct_t oct_u[8] =
 	},
 };
 
-oct_t oct_d[8] =
+oct_t oct_d[LCD_ROW_1_SIZE] =
 {
 	{
 		.pos = 7,
@@ -114,14 +151,18 @@ oct_t oct_d[8] =
 	{
 		.pos = 6,
 		.reg = 10
-	},
-	{
-		.pos = 6,
-		.reg = 5
 	},
 };
 
 /*
+ * @brief Esta funcion ajusta el estado de un segmento, encendido o apagado,
+ * por cada llamada. La caracter a manipular, linea 1 o linea 2 y la posicion
+ * del cursor, son informaciones guardadas en dos variables globales, g_cursor
+ * y g_line. Con el mapeo de los segmentos, y sabiendo que segmento se quiere
+ * manipular, notar que para el primer carcter de cada linea se tiene una matriz
+ * con la posicion en el mapa de mempria para el pcf8553, con lo cual no se
+ * requiere calculo, el calculo es de utilidad para los caracteres que no ocupan
+ * la primera posicion de cada liena.
  *
  */
 void lcd_write_line(uint8_t seg, uint8_t data)
@@ -129,19 +170,26 @@ void lcd_write_line(uint8_t seg, uint8_t data)
 	uint8_t reg = 0;
 	uint8_t pos = 0;
 
-	if (g_line == 1)
+	/*
+	 *
+	 *
+	 */
+	switch (g_line)
 	{
-		pos = oct_u[seg].pos;
-		pos += g_cursor * 2;
-		reg = (pos / 8) + oct_u[seg].reg;
-		pos = pos % 8;
-	}
-	else
-	{
-		pos = oct_d[seg].pos;
-		pos += g_cursor * 2;
-		reg = (pos / 8) + oct_d[seg].reg;
-		pos = pos % 8;
+		case 1:
+			pos = oct_u[seg].pos;
+			pos += g_cursor * 2;
+			reg = (pos / 8) + oct_u[seg].reg; // @suppress("Avoid magic numbers")
+			pos = pos % 8; // @suppress("Avoid magic numbers")
+		break;
+		case 2:
+			pos = oct_d[seg].pos;
+			pos += g_cursor * 2;
+			reg = (pos / 8) + oct_d[seg].reg; // @suppress("Avoid magic numbers")
+			pos = pos % 8; // @suppress("Avoid magic numbers")
+		break;
+		default:
+		break;
 	}
 
 	if (data)
@@ -155,6 +203,7 @@ void lcd_write_line(uint8_t seg, uint8_t data)
 }
 
 /*
+ * @brief
  *
  */
 void lcd_put_char(char c, uint8_t col, uint8_t row)
@@ -165,21 +214,31 @@ void lcd_put_char(char c, uint8_t col, uint8_t row)
 	{
 		return;
 	}
-	;
 
 	g_buf[row][col] = c;
 
 	switch (row)
 	{
 		case 0:
-			if (col > 7)
+			if (col < LCD_ROW_0_SIZE)
+			{
+				g_cursor = col;
+			}
+			else
+			{
 				return;
-			g_cursor = col;
+			}
 		break;
 		case 1:
-			if (col > 6)
+			if (col < LCD_ROW_1_SIZE)
+			{
+				g_cursor = 6 - col; // @suppress("Avoid magic numbers")
+			}
+			else
+			{
 				return;
-			g_cursor = 6 - col;
+			}
+
 		break;
 		default:
 			return;

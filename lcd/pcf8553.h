@@ -14,7 +14,7 @@
 
 #include "main.h"
 
-// Macros, defines, for microcontroller taken pins (dhs).
+// Macros for microcontroller taken pins (dhs).
 
 /*
  * Pines dedicados al PCF8553, no me confio de siempre usar el cubemx para
@@ -54,7 +54,7 @@ typedef union
 		uint8_t clock_ouput :1;
 		uint8_t internal_oscilator :1;
 		uint8_t frame_frequency :2;
-		uint8_t default_value :4;
+		uint8_t default_value :4; // @suppress("Avoid magic numbers")
 	} reg_bits;
 } device_ctrl_t;
 
@@ -74,7 +74,7 @@ typedef union
 		uint8_t bias_mode :1;
 		uint8_t mux :2;
 		uint8_t boost :1;
-		uint8_t default_value :3;
+		uint8_t default_value :3; // @suppress("Avoid magic numbers")
 	} reg_bits;
 } display_ctrl_1_t;
 
@@ -93,8 +93,14 @@ typedef union
 	} reg_bits;
 } display_ctrl_2_t;
 
-
 // Defines
+
+/*
+ * Tamaño de la memoria interna del pcf8553 para controlas el encendido/apgado
+ * de los segmentos, con 20 bytes se controlan 20 * 8 =  160 segmentos.
+ *
+ */
+#define PCF8553_DATA_SIZE 20
 
 // Public function prototypes.
 

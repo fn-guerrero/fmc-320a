@@ -1,7 +1,7 @@
 /** @file lcd_module.c
  *
- * @brief API del LCD, la aplicacion deber a poder fucionar haciendo uso
- * solamente de las funcones de este modulo.
+ * @brief Este es el modulo de mas alto nivel, las API, funciones que seran
+ * usadas a lo largo de la aplicacion.
  *
  */
 
@@ -46,8 +46,8 @@ void lcd_module_utoa_right(char *dest, uint32_t num, lcd_row_t row)
 	while (n)
 	{
 		n--;
-		dest[n] = num % 10 + '0';
-		num /= 10;
+		dest[n] = num % 10 + '0'; // @suppress("Avoid magic numbers")
+		num /= 10;  // @suppress("Avoid magic numbers")
 	}
 }
 

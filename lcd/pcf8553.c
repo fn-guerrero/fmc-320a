@@ -45,15 +45,17 @@ typedef union
 	uint8_t data;
 	struct
 	{
-		uint8_t address :5;
+		uint8_t address :5;  // @suppress("Avoid magic numbers")
 		uint8_t not_used :2;
 		uint8_t read_write :1;
 	} bits;
 } register_address_t;
 
-// Data global constants
+// Data global constants.
 
-// Defines
+const uint32_t DEFAULT_DELAY = 20;
+
+// Defines.
 
 /*
  * To temporaly disable a block of code, use preprocessor's conditional
@@ -63,6 +65,15 @@ typedef union
  */
 #ifndef NDEBUG
 #endif
+
+/*
+ * Tamaño de la memoria interna del pcf8553 para controlas el encendido/apgado
+ * de los segmentos, con 20 bytes se controlan 20 * 8 =  160 segmentos.
+ *
+ */
+#define MEMORY_DATA_SIZE 20
+
+#define DATA_ADDRESS 4 /* First data address */
 
 /*
  *
@@ -96,7 +107,7 @@ extern SPI_HandleTypeDef hspi1;
 /*
  *
  */
-uint8_t g_lcd_map[20];
+uint8_t g_lcd_map[PCF8553_DATA_SIZE];
 
 // Global variables, statics.
 
@@ -157,7 +168,7 @@ void pcf8553_blink(pcf_blink_mode_t mode)
 	HAL_GPIO_WritePin(PCF8553_CE_PORT, PCF8553_CE_PIN, GPIO_PIN_RESET);
 	g_display_ctrl_2.reg_bits.blink = mode;
 	prepare_to_send(DISPLAY_CTRL_2_ADDRESS);
-	HAL_SPI_Transmit(&hspi1, &(g_display_ctrl_2.reg_data), 1, 100);
+	HAL_SPI_Transmit(&hspi1, &(g_display_ctrl_2.reg_data), 1, DEFAULT_DELAY);
 	HAL_GPIO_WritePin(PCF8553_CE_PORT, PCF8553_CE_PIN, GPIO_PIN_SET);
 }
 
@@ -181,10 +192,10 @@ void pcf8553_blink(pcf_blink_mode_t mode)
 void pcf8553_dump()
 {
 	HAL_GPIO_WritePin(PCF8553_CE_PORT, PCF8553_CE_PIN, GPIO_PIN_RESET);
-	prepare_to_send(4);
-	for (int i = 0; i < 0x20; i++)
+	prepare_to_send(DATA_ADDRESS);
+	for (int i = 0; i < PCF8553_DATA_SIZE; i++)
 	{
-		HAL_SPI_Transmit(&hspi1, g_lcd_map + i, 1, 100);
+		HAL_SPI_Transmit(&hspi1, g_lcd_map + i, 1, DEFAULT_DELAY);
 	}
 	HAL_GPIO_WritePin(PCF8553_CE_PORT, PCF8553_CE_PIN, GPIO_PIN_SET);
 }
@@ -197,7 +208,7 @@ void pcf8553_init()
 {
 
 	pcf8553_reset();
-	HAL_Delay(10);
+	HAL_Delay(DEFAULT_DELAY);
 
 	/*
 	 * @brief El pcf8553 tiene un pin de chip selec, la siguiente instruccion
@@ -214,9 +225,9 @@ void pcf8553_init()
 	 *
 	 */
 	prepare_to_send(0x1);
-	HAL_SPI_Transmit(&hspi1, &(g_device_ctrl.reg_data), 1, 20);
-	HAL_SPI_Transmit(&hspi1, &(g_display_ctrl_1.reg_data), 1, 20);
-	HAL_SPI_Transmit(&hspi1, &(g_display_ctrl_2.reg_data), 1, 20);
+	HAL_SPI_Transmit(&hspi1, &(g_device_ctrl.reg_data), 1, DEFAULT_DELAY);
+	HAL_SPI_Transmit(&hspi1, &(g_display_ctrl_1.reg_data), 1, DEFAULT_DELAY);
+	HAL_SPI_Transmit(&hspi1, &(g_display_ctrl_2.reg_data), 1, DEFAULT_DELAY);
 
 	/*
 	 *  Chip disable.
@@ -225,7 +236,7 @@ void pcf8553_init()
 	HAL_GPIO_WritePin(PCF8553_CE_PORT, PCF8553_CE_PIN, GPIO_PIN_SET);
 
 // All segments on after init.
-	pcf8553_write_all(0xFF);
+	pcf8553_write_all(0xFF); // @suppress("Avoid magic numbers")
 }
 
 /*
@@ -236,7 +247,7 @@ void pcf8553_init()
 void pcf8553_reset()
 {
 	HAL_GPIO_WritePin(PCF8553_RESET_PORT, PCF8553_RESET_PIN, GPIO_PIN_RESET);
-	HAL_Delay(10);
+	HAL_Delay(DEFAULT_DELAY);
 	HAL_GPIO_WritePin(PCF8553_RESET_PORT, PCF8553_RESET_Pin, GPIO_PIN_SET);
 }
 
@@ -252,7 +263,7 @@ void pcf8553_reset()
  */
 void pcf8553_write_all(uint8_t data)
 {
-	for (int i = 0; i < 20; i++)
+	for (int i = 0; i < PCF8553_DATA_SIZE; i++)
 	{
 		g_lcd_map[i] = data;
 	}
@@ -260,7 +271,8 @@ void pcf8553_write_all(uint8_t data)
 }
 
 /*
- * @brief Write any register
+ * @brief Write any data address. Esta funcion fue usa al comenzar el desarrollo
+ * del drive. Desde etapas muy tempranas dejo de ser usada.
  *
  * @param add es la direccion de memoria a escribir
  * @param data es el valor a escribir
@@ -270,7 +282,7 @@ void pcf8553_write_byte(uint8_t add, uint8_t data)
 {
 	HAL_GPIO_WritePin(PCF8553_CE_PORT, PCF8553_CE_PIN, GPIO_PIN_RESET);
 	prepare_to_send(add);
-	HAL_SPI_Transmit(&hspi1, &data, 1, 100);
+	HAL_SPI_Transmit(&hspi1, &data, 1, DEFAULT_DELAY);
 	HAL_GPIO_WritePin(PCF8553_CE_PORT, PCF8553_CE_PIN, GPIO_PIN_SET);
 }
 
@@ -297,7 +309,7 @@ void prepare_to_send(uint8_t add)
 	reg.bits.address = add;
 	reg.bits.not_used = 0;
 	reg.bits.read_write = WRITE_DATA;
-	HAL_SPI_Transmit(&hspi1, &(reg.data), 1, 100);
+	HAL_SPI_Transmit(&hspi1, &(reg.data), 1, DEFAULT_DELAY);
 }
 
 /*** end of file ***/

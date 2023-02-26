@@ -21,7 +21,7 @@
  */
 typedef enum
 {
-	LCD_ROW_0 = 0, LCD_ROW_1 = 1,
+	LCD_ROW_0 = 0, LCD_ROW_1 = 1
 } lcd_row_t;
 
 /*

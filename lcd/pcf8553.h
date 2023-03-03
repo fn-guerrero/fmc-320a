@@ -93,7 +93,7 @@ typedef union
 	} reg_bits;
 } display_ctrl_2_t;
 
-// Defines
+// Defines.
 
 /*
  * Tamaño de la memoria interna del pcf8553 para controlas el encendido/apgado

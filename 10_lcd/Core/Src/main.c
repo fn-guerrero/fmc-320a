@@ -137,10 +137,10 @@ int main(void)
 				 * Incremnento dos condadores, muestro cada uno en la primera
 				 * y segunda linea del LCD
 				 */
-				lcd_module_utoa_right(msg_0, time_start, LCD_ROW_0);
-				lcd_module_utoa_right(msg_1, time_end, LCD_ROW_1);
-				lcd_module_puts(msg_0, LCD_ROW_0);
-				lcd_module_puts(msg_1, LCD_ROW_1);
+				snprintf(msg_0, sizeof(msg_0), "%08lu", time_start);
+				snprintf(msg_1, sizeof(msg_1), "%07lu", time_end);
+				lcd_module_puts(msg_0, sizeof(msg_0), LCD_ROW_0);
+				lcd_module_puts(msg_1, sizeof(msg_1), LCD_ROW_1);
 				lcd_module_refresh();
 				time_start++;
 				time_end++;
@@ -156,11 +156,11 @@ int main(void)
 
 				time_start = __HAL_TIM_GET_COUNTER(&htim16);
 
-				lcd_module_utoa_right(msg_0, time_start, LCD_ROW_0);
-				lcd_module_utoa_right(msg_1, time_delta, LCD_ROW_1);
+				//lcd_module_utoa_right(msg_0, time_start, LCD_ROW_0);
+				//lcd_module_utoa_right(msg_1, time_delta, LCD_ROW_1);
 
-				lcd_module_puts(msg_0, LCD_ROW_0);
-				lcd_module_puts(msg_1, LCD_ROW_1);
+	//			lcd_module_puts(msg_0, LCD_ROW_0);
+	//			lcd_module_puts(msg_1, LCD_ROW_1);
 
 				lcd_module_refresh();
 

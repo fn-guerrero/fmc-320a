@@ -11,9 +11,10 @@
 #include "main.h"
 
 void lcd_module_init();
-void lcd_module_puts(char*, uint8_t row);
-void lcd_module_utoa_right(char *dest, uint32_t num, uint8_t row);
+void lcd_module_puts(const char *p_str, uint32_t len, uint8_t row);
 void lcd_module_refresh();
+
+// Defines.
 
 #endif /* LCD_MODULE_H_ */
 

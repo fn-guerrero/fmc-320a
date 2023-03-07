@@ -1,15 +1,13 @@
-/*
- * fm-160lcd.h
+/* @file lcd.h
  *
- *
- * @par
+ * @brief
  *
  * COPYRIGHT NOTE: (c) 2023 FLOWMEET. All right reserved.
  *
  */
 
-#ifndef INC_FM_160LCD_H_
-#define INC_FM_160LCD_H_
+#ifndef LCD_H_
+#define LCD_H_
 
 #include "main.h"
 
@@ -62,6 +60,6 @@ typedef struct
 void lcd_put_char(char c, uint8_t col, lcd_row_t row);
 void lcd_init();
 
-#endif /* INC_FM_160LCD_H_ */
+#endif /* LCD_H_ */
 
 /*** end of file ***/

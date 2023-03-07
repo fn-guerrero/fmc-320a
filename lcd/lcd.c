@@ -1,4 +1,4 @@
-/* @file fm-160lcd.c
+/* @file lcd.c
  *
  * @brief Este es un driver intermedio entre lcd_module.c y pcf8553. Entre las
  * responsabilidades de este modulo estan:
@@ -7,7 +7,7 @@
  * Linea 2 de 7 caracteres
  * Simbolos RATE, BACH, TTL, ACM, H, M, S, D....
  *
- *
+ * COPYRIGHT NOTE: (c) 2023 FLOWMEET. All right reserved.
  *
  */
 
@@ -53,7 +53,7 @@ extern uint8_t g_lcd_map[PCF8553_DATA_SIZE];
  * Notar que la primera linea tiene
  *
  */
-static uint8_t g_buf[LCD_COLS][LCD_ROWS];
+static uint8_t g_buf[LCD_ROWS][LCD_COLS];
 static uint8_t g_col;
 static uint8_t g_row;
 
@@ -144,7 +144,7 @@ void lcd_write_line(uint8_t seg, uint8_t data);
 // Public function bodies.
 
 /*
- * brief
+ * @brief
  *
  */
 void lcd_init()

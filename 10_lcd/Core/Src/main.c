@@ -6,14 +6,16 @@
  ******************************************************************************
  * @attention
  *
- * Autor: dhs
+ * Autor: FLOWMEET LLC
  *
  * Enero 6 2023
  *
- * Luego de crear el driver PCF8553, el driver LCD y la API del * modulo de LCD,
- * se usara este archivo main.c para debugger y agregar funciones, para todo
- * cambio se deben correr los casos de testo y si es necesario agregar nuevos.
- *
+ * Luego de crear el driver PCF8553, el modulo LCD y la API del modulo de LCD,
+ * se creo este proyecto, iniciando el control de versiones, se crearon casos
+ * de testeo de una manera rudimentaria, algo a a mejorar con tecnicad TDD, por
+ * ahora es lo que tenemos, al corregir bugs o agregar funcionalidades de deben
+ * comprobar que los casos de testeo sigan "pasando", y si es necesario hay que
+ * agregar nuevos.
  *
  ******************************************************************************
  */
@@ -83,7 +85,7 @@ int main(void)
 	/* USER CODE BEGIN 1 */
 	char msg_0[20];
 	char msg_1[20];
-	uint8_t test = 1;
+	uint8_t test = 2;
 
 	/* USER CODE END 1 */
 
@@ -131,14 +133,13 @@ int main(void)
 
 		switch (test)
 		{
+			/*
+			 * Incremnento dos condadores, muestro cada uno en la primera
+			 * y segunda linea del LCD
+			 */
 			case 1:
 
-				/*
-				 * Incremnento dos condadores, muestro cada uno en la primera
-				 * y segunda linea del LCD
-				 */
-				snprintf(msg_0, sizeof(msg_0), "%08lu", time_start);
-				snprintf(msg_1, sizeof(msg_1), "%07lu", time_end);
+
 				lcd_module_puts(msg_0, sizeof(msg_0), LCD_ROW_0);
 				lcd_module_puts(msg_1, sizeof(msg_1), LCD_ROW_1);
 				lcd_module_refresh();
@@ -146,21 +147,22 @@ int main(void)
 				time_end++;
 				HAL_Delay(1000);
 			break;
-			case 2:
+
 				/*
 				 * Se mide la costo en micro-segundos para imprimir ambas lineas del
 				 * LCD.
 				 * En la linea 1 se imprime el valor que tiene el timer 6 al inicio
 				 * En la linea 2 se imprimen los micro-segundos consumidos.
 				 */
+			case 2:
 
 				time_start = __HAL_TIM_GET_COUNTER(&htim16);
 
-				//lcd_module_utoa_right(msg_0, time_start, LCD_ROW_0);
-				//lcd_module_utoa_right(msg_1, time_delta, LCD_ROW_1);
+				snprintf(msg_0, sizeof(msg_0), "%08lu", time_start);
+				snprintf(msg_1, sizeof(msg_1), "%07lu", time_delta);
 
-	//			lcd_module_puts(msg_0, LCD_ROW_0);
-	//			lcd_module_puts(msg_1, LCD_ROW_1);
+				lcd_module_puts(msg_0, sizeof(msg_0), LCD_ROW_0);
+				lcd_module_puts(msg_1, sizeof(msg_1), LCD_ROW_1);
 
 				lcd_module_refresh();
 
@@ -171,8 +173,11 @@ int main(void)
 				HAL_PWREx_EnterSTOP2Mode(PWR_STOPENTRY_WFI); // stop1 mode
 				SystemClock_Config(); //al salir del modo de bajo consumo hay que volver a configurar el clock
 				HAL_ResumeTick();
-
 			break;
+
+				/*
+				 *
+				 */
 			default:
 			break;
 		}

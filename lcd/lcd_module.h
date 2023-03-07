@@ -1,8 +1,9 @@
-/*
- * fm_lcd_module.h
+/* @file lcd_module.h
  *
- *  Created on: 2 ene. 2023
- *      Author: DHS
+ * @brief
+ *
+ * COPYRIGHT NOTE: (c) 2023 FLOWMEET. All right reserved.
+ *
  */
 
 #ifndef LCD_MODULE_H_

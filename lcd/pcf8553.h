@@ -2,13 +2,12 @@
  *
  * @brief Libreria para manejo de lcd driver de la marca nxp pcf8553
  *
- * @par
  * COPYRIGHT NOTE: (c) 2023 FLOWMEET. All right reserved.
  *
  */
 
-#ifndef INC_PCF8553_H_
-#define INC_PCF8553_H_
+#ifndef PCF8553_H_
+#define PCF8553_H_
 
 // Includes.
 
@@ -118,6 +117,6 @@ void pcf8553_reset();
 void pcf8553_write_all(uint8_t data);
 void pcf8553_write_byte(uint8_t add, uint8_t data);
 
-#endif /* INC_PCF8553_H_ */
+#endif /* PCF8553_H_ */
 
 /*** end of file ***/

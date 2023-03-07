@@ -1,7 +1,9 @@
-/** @file lcd_module.c
+/* @file lcd_module.c
  *
  * @brief Este es el modulo de mas alto nivel, las API, funciones que seran
  * usadas a lo largo de la aplicacion.
+ *
+ * COPYRIGHT NOTE: (c) 2023 FLOWMEET. All right reserved.
  *
  */
 
@@ -28,7 +30,7 @@ void lcd_module_init()
  *
  *
  */
-void lcd_module_puts(const char *c, uint32_t len, lcd_row_t row)
+void lcd_module_puts(const char *c, uint32_t len, const lcd_row_t row)
 {
 	uint8_t col = 0;
 	while ((*c) && (col < len))
